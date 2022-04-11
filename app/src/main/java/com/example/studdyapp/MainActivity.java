@@ -8,13 +8,20 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Point;
+import android.graphics.Rect;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -36,6 +43,7 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -48,6 +56,8 @@ public class MainActivity extends AppCompatActivity{
     static ListViewAdapter adapter;
     ImageButton capture_picture;
     String text, name;
+
+    private String currentPhotoPath;
 //    EditText input;
 //    ImageView enter;
     ActivityResultLauncher<Intent> activityResultLauncher;
@@ -105,14 +115,35 @@ public class MainActivity extends AppCompatActivity{
         capture_picture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-                startActivity(intent);
-                if(intent.resolveActivity(getPackageManager()) != null) {
-                    activityResultLauncher.launch(intent);
-                } else {
-                    Toast.makeText(MainActivity.this, "The camera is not working.",
-                            Toast.LENGTH_SHORT).show();
+                String fileName = "photo";
+                File storageDirectory = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+                try {
+                    File imageFile = File.createTempFile(fileName, ".jpg", storageDirectory);
+                    currentPhotoPath = imageFile.getAbsolutePath();
+                    Uri imageUri = FileProvider.getUriForFile(MainActivity.this, "com.example.studdyapp.fileprovider", imageFile);
+
+                    Intent intent = new Intent (MediaStore.ACTION_IMAGE_CAPTURE);
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+                    if(intent.resolveActivity(getPackageManager()) != null) {
+                        activityResultLauncher.launch(intent);
+                    } else {
+                        Toast.makeText(MainActivity.this, "The camera is not working.",
+                                Toast.LENGTH_SHORT).show();
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
+
+
+//                Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+//                startActivity(intent);
+//                if(intent.resolveActivity(getPackageManager()) != null) {
+//                    activityResultLauncher.launch(intent);
+//                } else {
+//                    Toast.makeText(MainActivity.this, "The camera is not working.",
+//                            Toast.LENGTH_SHORT).show();
+//                }
             }
         });
 
@@ -120,12 +151,12 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onActivityResult(ActivityResult result) {
                 if(result.getResultCode() == RESULT_OK && result.getData() != null) {
-                    Bundle bundle = result.getData().getExtras();
-                    Bitmap finalPhoto = (Bitmap) bundle.get("data");
-
+//                    Bundle bundle = result.getData().getExtras();
+//                    Bitmap finalPhoto = (Bitmap) bundle.get("data");
+                    Bitmap bitmap = BitmapFactory.decodeFile(currentPhotoPath);
                     // (OCR) Prepare the input image
-                    InputImage image = InputImage.fromBitmap(finalPhoto, 0);
-
+//                    InputImage image = InputImage.fromBitmap(finalPhoto, 0);
+                    InputImage image = InputImage.fromBitmap(bitmap, 0);
                     // (OCR) Process the image
                     Task<Text> processImage =
                             recognizer.process(image)
@@ -136,6 +167,27 @@ public class MainActivity extends AppCompatActivity{
                                             // ...
                                             // (OCR) Extract text from blocks of recognized text
                                             String imageText = visionText.getText();
+
+
+//                                            String resultText = visionText.getText();
+//                                            for (Text.TextBlock block : visionText.getTextBlocks()) {
+//                                                String blockText = block.getText();
+//                                                Point[] blockCornerPoints = block.getCornerPoints();
+//                                                Rect blockFrame = block.getBoundingBox();
+//                                                for (Text.Line line : block.getLines()) {
+//                                                    String lineText = line.getText();
+//                                                    Point[] lineCornerPoints = line.getCornerPoints();
+//                                                    Rect lineFrame = line.getBoundingBox();
+//                                                    for (Text.Element element : line.getElements()) {
+//                                                        String elementText = element.getText();
+////                                                        arr.add(elementText);
+//                                                        Point[] elementCornerPoints = element.getCornerPoints();
+//                                                        Rect elementFrame = element.getBoundingBox();
+//                                                    }
+//                                                }
+//                                            }
+
+
 
                                             // Start and pass the recognized text to the FixData activity
                                             Intent intent = new Intent(MainActivity.this, FixData.class);
@@ -188,7 +240,7 @@ public class MainActivity extends AppCompatActivity{
 
             String s = new String(content);
             s = s.substring(1, s.length()-1);
-            String split [] = s.split("(END)");
+            String split [] = s.split(",");
             items = new ArrayList<>(Arrays.asList(split));
             adapter = new ListViewAdapter(this, items);
             listView.setAdapter(adapter);

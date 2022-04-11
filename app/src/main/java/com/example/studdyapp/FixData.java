@@ -27,11 +27,11 @@ public class FixData extends AppCompatActivity {
         ocrErrorFix=findViewById(R.id.editTextMultiLine);
         saveData=findViewById(R.id.saveData);
 
+
         // Collect the OCR data passed from MainActivity
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             ocrTextFinal = extras.getString("imageData");
-
             // Set the edit text field to display the OCR data
             ocrErrorFix.setText(ocrTextFinal);
 
@@ -41,6 +41,7 @@ public class FixData extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String text = ocrErrorFix.getText().toString();
+                text.trim();
                 MainActivity.addItem(text);
                 finish();
             }
