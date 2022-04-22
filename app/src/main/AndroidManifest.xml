@@ -4,6 +4,8 @@
 
     <!-- Necessary for camera features -->
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-feature android:name="android.hardware.camera" android:required="true"/>
 
 
@@ -20,7 +22,8 @@
         android:label="Study App"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.StuddyApp">
+        android:theme="@style/Theme.StuddyApp"
+        android:largeHeap="true">
         <meta-data
             android:name="com.google.mlkit.vision.DEPENDENCIES"
             android:value="ocr" />
@@ -44,6 +47,19 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
+        <activity
+            android:name=".FillInTheBlankQuestion"
+            android:parentActivityName=".Question">
+
+            <!-- The meta-data tag is required if you support API level 15 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".Question" />
+        </activity>
+
+
+
+
         <activity
             android:name=".CreateDoc"
             android:parentActivityName=".MainActivity">

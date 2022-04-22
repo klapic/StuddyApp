@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -109,8 +110,10 @@ public class MainActivity extends AppCompatActivity{
         activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
             @Override
             public void onActivityResult(ActivityResult result) {
-                if(result.getResultCode() == RESULT_OK && result.getData() != null) {
+//                if(result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                if(result.getResultCode() == Activity.RESULT_OK) {
                     Bitmap bitmap = BitmapFactory.decodeFile(currentPhotoPath);
+
                     InputImage image = InputImage.fromBitmap(bitmap, 0);
                     // (OCR) Process the image
                     Task<Text> processImage =
@@ -138,6 +141,9 @@ public class MainActivity extends AppCompatActivity{
                                                             Toast.LENGTH_SHORT).show();
                                                 }
                                             });
+                }else{
+                    Toast.makeText(MainActivity.this, "Cannot pass to OCR.",
+                            Toast.LENGTH_SHORT).show();
                 }
             }
         });
